@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Map } from "google-maps-react";
 import styled from "styled-components";
 
@@ -7,13 +7,7 @@ const Container = styled.div`
   position: relative;
 `;
 
-
-const MapContainer = ({
-  google,
-  zoom,
-  initialCenter,
-  mapRef,
-}) => {
+const MapContainer = memo(({ google, zoom, initialCenter, mapRef }) => {
   return (
     <Container>
       <Map
@@ -24,6 +18,6 @@ const MapContainer = ({
       />
     </Container>
   );
-};
+});
 
 export default MapContainer;

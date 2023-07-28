@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -14,8 +14,8 @@ const Canvas = styled.canvas`
   height: 100%;
 `;
 
-const CanvasContainer = ({ capturedImage }) => {
-  return <Container>{capturedImage && <Canvas id="renderCanvas" />}</Container>;
-};
+const CanvasContainer = memo(() => {
+  return <Container>{<Canvas id="renderCanvas" />}</Container>;
+});
 
 export default CanvasContainer;

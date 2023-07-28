@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { GoogleApiWrapper } from "google-maps-react";
 import * as BABYLON from "babylonjs";
-import { Engine, Scene, useBeforeRender } from "react-babylonjs";
+import { useBeforeRender } from "react-babylonjs";
 import styled from "styled-components";
 
 import MapContainer from "./components/MapContainer";
@@ -18,6 +18,9 @@ function MyApp({ google }) {
   const mapRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [mapVisible, setMapVisible] = useState(true);
+
+  const sceneRef = useRef(null);
+  const cuboidRef = useRef(null);
 
   const handleCaptureImage = () => {
     if (!mapRef.current || !mapRef.current.map) {
@@ -40,13 +43,22 @@ function MyApp({ google }) {
       setCapturedImage(mapImage);
       setMapVisible(false);
     };
-
+    
     mapImage.src = mapImageURL;
+    const texture = new BABYLON.Texture(mapImage.src, sceneRef.current);
+    const material = new BABYLON.StandardMaterial("material", sceneRef.current);
+    material.diffuseTexture = texture;
+    material.diffuseTexture.hasAlpha = true;
+    cuboidRef.current.material = material;
   };
 
   useEffect(() => {
-    if (capturedImage) create3DScene(capturedImage);
-  }, [capturedImage]);
+    create3DScene();
+
+    return () => {
+      window.removeEventListener("resize", () => {});
+    };
+  }, []);
 
   const create3DScene = (mapImage) => {
     const canvas = document.getElementById("renderCanvas");
@@ -77,16 +89,19 @@ function MyApp({ google }) {
       );
 
       const cuboid = BABYLON.MeshBuilder.CreateBox("cuboid", {}, scene);
-      const texture = new BABYLON.Texture(mapImage.src, scene);
-      const material = new BABYLON.StandardMaterial("material", scene);
-      material.diffuseTexture = texture;
-      material.diffuseTexture.hasAlpha = true;
-      cuboid.material = material;
-
+      cuboidRef.current = cuboid;
+      if (mapImage) {
+        const texture = new BABYLON.Texture(mapImage.src, scene);
+        const material = new BABYLON.StandardMaterial("material", scene);
+        material.diffuseTexture = texture;
+        material.diffuseTexture.hasAlpha = true;
+        cuboid.material = material;
+      }
       return scene;
     };
 
     const scene = createScene();
+    sceneRef.current = scene;
 
     engine.runRenderLoop(() => {
       scene.render();
